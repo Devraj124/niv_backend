@@ -52,7 +52,8 @@ INSTALLED_APPS = [
 # MIDDLEWARE (ORDER IS IMPORTANT)
 # --------------------------------------------------
 MIDDLEWARE = [
-    'corsheaders.middleware.CorsMiddleware',   # 👈 must be on top
+    'corsheaders.middleware.CorsMiddleware', # 👈 must be on top
+    'whitenoise.middleware.WhiteNoiseMiddleware',  
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -134,22 +135,25 @@ USE_I18N = True
 USE_TZ = True
 
 
-# --------------------------------------------------
+# -------------------------------
 # STATIC FILES
-# --------------------------------------------------
-
+# -------------------------------
 STATIC_URL = '/static/'
-
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
-STATICFILES_DIRS = [
-    BASE_DIR / 'static',
-]
-# --------------------------------------------------
-# MEDIA FILES (CKEDITOR REQUIRED)
-# --------------------------------------------------
+STATICFILES_DIRS = []
+if (BASE_DIR / 'static').exists():
+    STATICFILES_DIRS.append(BASE_DIR / 'static')
+
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
+
+# -------------------------------
+# MEDIA FILES (CKEditor)
+# -------------------------------
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
+
 
 
 # --------------------------------------------------
