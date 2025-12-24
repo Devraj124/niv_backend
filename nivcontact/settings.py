@@ -3,20 +3,22 @@ from datetime import timedelta
 from pathlib import Path
 from django.core.management.utils import get_random_secret_key
 import os
+
 env = environ.Env(DEBUG=(bool, False))
 BASE_DIR = Path(__file__).resolve().parent.parent
 environ.Env.read_env(os.path.join(BASE_DIR, ".env"))
 
 DJANGO_PRODUCTION = env.bool("DJANGO_PRODUCTION", default=False)
 
-if DJANGO_PRODUCTION:
-    SECRET_KEY = os.environ.get("SECRET_KEY")
-    if not SECRET_KEY:
-        raise RuntimeError("SECRET_KEY missing")
-    ALLOWED_HOSTS = env.list("ALLOWED_HOSTS")
-else:
-    SECRET_KEY = os.environ.get("SECRET_KEY") or get_random_secret_key()
-    ALLOWED_HOSTS = ["localhost", "127.0.0.1"]
+SECRET_KEY = env("SECRET_KEY", default=get_random_secret_key())
+
+DEBUG = env.bool("DEBUG", default=not DJANGO_PRODUCTION)
+
+ALLOWED_HOSTS = env.list(
+    "ALLOWED_HOSTS",
+    default=["localhost", "127.0.0.1", ".onrender.com"]
+)
+
 
 DEBUG = env.bool("DEBUG", default=True)
 
@@ -64,7 +66,8 @@ MIDDLEWARE = [
 # --------------------------------------------------
 # CORS CONFIG
 # --------------------------------------------------
-CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_ALL_ORIGINS = False
+CORS_ALLOWED_ORIGINS = env.list("CORS_ALLOWED_ORIGINS", default=[])
 
 
 # --------------------------------------------------
