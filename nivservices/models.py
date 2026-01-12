@@ -9,6 +9,7 @@ WEBSITE_CHOICES = (
     ('NIVIT', 'NIVIT'),
     ('NIVMASS', 'NIVMASS'),
     ('NIVBRM', 'NIVBRM'),
+    ('NIVPAP', 'NIVPAP'),
 )
 
 
@@ -32,6 +33,30 @@ class WebsitePolicy(models.Model):
 
     def __str__(self):
         return f"{self.website} – {self.policy_type}"
+    
+
+
+class WebsitePolicy(models.Model):
+    POLICY_TYPE_CHOICES = (
+        ('TERMS', 'Terms of Services'),
+        ('PRIVACY', 'Privacy Policy'),
+        ('RETURN_REFUND', 'Return & Refund Policy'),  # 🔥 NEW
+        ('SHIPMENT', 'Shipment Policy'),              # 🔥 NEW
+    )
+
+    website = models.CharField(max_length=20, choices=WEBSITE_CHOICES)
+    policy_type = models.CharField(max_length=30, choices=POLICY_TYPE_CHOICES)
+
+    title = models.CharField(max_length=255)
+    content = RichTextField()
+
+    class Meta:
+        unique_together = ('website', 'policy_type')
+
+    def __str__(self):
+        return f"{self.website} - {self.policy_type}"
+
+
 
 
 # =========================
@@ -82,6 +107,37 @@ class NIVBRMPrivacy(WebsitePolicy):
         verbose_name_plural = "NIVBRM – Privacy Policy"
 
 
+
+class NIVPAPTerms(WebsitePolicy):
+    class Meta:
+        proxy = True
+        verbose_name = "NIVPAP – Terms of Services"
+        verbose_name_plural = "NIVPAP – Terms of Services"
+
+
+class NIVPAPPrivacy(WebsitePolicy):
+    class Meta:
+        proxy = True
+        verbose_name = "NIVPAP – Privacy Policy"
+        verbose_name_plural = "NIVPAP – Privacy Policy"
+
+
+class NIVPAPReturnRefund(WebsitePolicy):
+    class Meta:
+        proxy = True
+        verbose_name = "NIVPAP – Return & Refund Policy"
+        verbose_name_plural = "NIVPAP – Return & Refund Policy"
+
+
+class NIVPAPShipment(WebsitePolicy):
+    class Meta:
+        proxy = True
+        verbose_name = "NIVPAP – Shipment Policy"
+        verbose_name_plural = "NIVPAP – Shipment Policy"
+
+
+
+
 # =========================
 # KNOWLEDGE BASE (NO TITLE)
 # =========================
@@ -126,6 +182,36 @@ class NIVBRMKnowledgeBase(KnowledgeBase):
         verbose_name_plural = "NIVBRM – Knowledge Base"
 
 
+
+
+class KnowledgeBase(models.Model):
+    website = models.CharField(max_length=20, choices=WEBSITE_CHOICES)
+
+    def __str__(self):
+        return f"{self.website} – Knowledge Base"
+
+
+class KnowledgeBaseFile(models.Model):
+    knowledgebase = models.ForeignKey(
+        KnowledgeBase,
+        related_name="files",
+        on_delete=models.CASCADE
+    )
+    title = models.CharField(max_length=255)
+    pdf = models.FileField(upload_to="knowledgebase/")
+
+    def __str__(self):
+        return self.title
+
+
+class NIVPAPKnowledgeBase(KnowledgeBase):
+    class Meta:
+        proxy = True
+        verbose_name = "NIVPAP – Knowledge Base"
+        verbose_name_plural = "NIVPAP – Knowledge Base"
+
+
+
 # =========================
 # SOPs (NO TITLE)
 # =========================
@@ -168,3 +254,34 @@ class NIVBRMSOP(SOP):
         proxy = True
         verbose_name = "NIVBRM – SOPs"
         verbose_name_plural = "NIVBRM – SOPs"
+
+
+
+# =========================
+# SOPs
+# =========================
+class SOP(models.Model):
+    website = models.CharField(max_length=20, choices=WEBSITE_CHOICES)
+
+    def __str__(self):
+        return f"{self.website} – SOPs"
+
+
+class SOPFile(models.Model):
+    sop = models.ForeignKey(
+        SOP,
+        related_name="files",
+        on_delete=models.CASCADE
+    )
+    title = models.CharField(max_length=255)
+    pdf = models.FileField(upload_to="sops/")
+
+    def __str__(self):
+        return self.title
+
+
+class NIVPAPSOP(SOP):
+    class Meta:
+        proxy = True
+        verbose_name = "NIVPAP – SOPs"
+        verbose_name_plural = "NIVPAP – SOPs"

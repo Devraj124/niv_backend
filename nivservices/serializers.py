@@ -41,3 +41,26 @@ class SOPSerializer(serializers.ModelSerializer):
     class Meta:
         model = SOP
         fields = ('title', 'files')
+
+
+
+
+# ================= POLICIES =================
+class WebsitePolicySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = WebsitePolicy
+        fields = ("title", "content")
+
+
+# ================= KNOWLEDGE BASE =================
+class KnowledgeBaseFileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = KnowledgeBaseFile
+        fields = ("title", "pdf")
+
+
+# ================= SOPs =================
+class SOPFileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SOPFile
+        fields = ("title", "pdf")

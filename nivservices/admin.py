@@ -1,27 +1,28 @@
 from django.contrib import admin
 from .models import (
-    # TERMS
+    # ================= POLICIES =================
     NIVITTerms, NIVMASSTerms, NIVBRMTerms,
-
-    # PRIVACY
     NIVITPrivacy, NIVMASSPrivacy, NIVBRMPrivacy,
 
-    # KNOWLEDGE BASE
-    NIVITKnowledgeBase, NIVMASSKnowledgeBase, NIVBRMKnowledgeBase,
+    NIVPAPTerms, NIVPAPPrivacy,
+    NIVPAPReturnRefund, NIVPAPShipment,
+
+    # ================= KNOWLEDGE BASE =================
+    KnowledgeBase,
     KnowledgeBaseFile,
 
-    # SOPs
-    NIVITSOP, NIVMASSSOP, NIVBRMSOP,
+    # ================= SOPs =================
+    SOP,
     SOPFile,
 )
 
 
 # =====================================================
-# BASE WEBSITE ADMIN (AUTO WEBSITE + HIDE FIELD)
+# BASE WEBSITE ADMIN
 # =====================================================
 class BaseWebsiteAdmin(admin.ModelAdmin):
     website = None
-    exclude = ("website",)   # 🔥 Website field hidden everywhere
+    exclude = ("website",)
 
     def get_queryset(self, request):
         return super().get_queryset(request).filter(website=self.website)
@@ -32,14 +33,16 @@ class BaseWebsiteAdmin(admin.ModelAdmin):
 
 
 # =====================================================
-# TERMS / PRIVACY BASE
+# BASE POLICY ADMIN
 # =====================================================
 class BasePolicyAdmin(BaseWebsiteAdmin):
     fields = ("title", "content")
     policy_type = None
 
     def get_queryset(self, request):
-        return super().get_queryset(request).filter(policy_type=self.policy_type)
+        return super().get_queryset(request).filter(
+            policy_type=self.policy_type
+        )
 
     def save_model(self, request, obj, form, change):
         obj.policy_type = self.policy_type
@@ -65,6 +68,12 @@ class NIVBRMTermsAdmin(BasePolicyAdmin):
     policy_type = "TERMS"
 
 
+@admin.register(NIVPAPTerms)
+class NIVPAPTermsAdmin(BasePolicyAdmin):
+    website = "NIVPAP"
+    policy_type = "TERMS"
+
+
 # ================= PRIVACY =================
 @admin.register(NIVITPrivacy)
 class NIVITPrivacyAdmin(BasePolicyAdmin):
@@ -84,53 +93,50 @@ class NIVBRMPrivacyAdmin(BasePolicyAdmin):
     policy_type = "PRIVACY"
 
 
+@admin.register(NIVPAPPrivacy)
+class NIVPAPPrivacyAdmin(BasePolicyAdmin):
+    website = "NIVPAP"
+    policy_type = "PRIVACY"
+
+
+# ================= RETURN / SHIPMENT (NIVPAP ONLY) =================
+@admin.register(NIVPAPReturnRefund)
+class NIVPAPReturnRefundAdmin(BasePolicyAdmin):
+    website = "NIVPAP"
+    policy_type = "RETURN_REFUND"
+
+
+@admin.register(NIVPAPShipment)
+class NIVPAPShipmentAdmin(BasePolicyAdmin):
+    website = "NIVPAP"
+    policy_type = "SHIPMENT"
+
+
 # =====================================================
-# KNOWLEDGE BASE (ONLY INLINE TITLE + PDF)
+# KNOWLEDGE BASE (INLINE SAFE)
 # =====================================================
 class KnowledgeBaseFileInline(admin.TabularInline):
     model = KnowledgeBaseFile
     extra = 1
 
 
-@admin.register(NIVITKnowledgeBase)
-class NIVITKnowledgeBaseAdmin(BaseWebsiteAdmin):
-    website = "NIVIT"
+@admin.register(KnowledgeBase)
+class KnowledgeBaseAdmin(BaseWebsiteAdmin):
     inlines = [KnowledgeBaseFileInline]
-    fields = ()            # 🔥 NO parent title
+    fields = ()
     readonly_fields = ()
 
 
-@admin.register(NIVMASSKnowledgeBase)
-class NIVMASSKnowledgeBaseAdmin(NIVITKnowledgeBaseAdmin):
-    website = "NIVMASS"
-
-
-@admin.register(NIVBRMKnowledgeBase)
-class NIVBRMKnowledgeBaseAdmin(NIVITKnowledgeBaseAdmin):
-    website = "NIVBRM"
-
-
 # =====================================================
-# SOPs (ONLY INLINE TITLE + PDF)
+# SOPs (INLINE SAFE)
 # =====================================================
 class SOPFileInline(admin.TabularInline):
     model = SOPFile
     extra = 1
 
 
-@admin.register(NIVITSOP)
-class NIVITSOPAdmin(BaseWebsiteAdmin):
-    website = "NIVIT"
+@admin.register(SOP)
+class SOPAdmin(BaseWebsiteAdmin):
     inlines = [SOPFileInline]
-    fields = ()            # 🔥 NO parent title
+    fields = ()
     readonly_fields = ()
-
-
-@admin.register(NIVMASSSOP)
-class NIVMASSSOPAdmin(NIVITSOPAdmin):
-    website = "NIVMASS"
-
-
-@admin.register(NIVBRMSOP)
-class NIVBRMSOPAdmin(NIVITSOPAdmin):
-    website = "NIVBRM"
