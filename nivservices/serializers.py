@@ -1,66 +1,68 @@
 from rest_framework import serializers
 from .models import (
     WebsitePolicy,
-    KnowledgeBase, KnowledgeBaseFile,
-    SOP, SOPFile
+    KnowledgeBaseFile,
+    SOPFile,
 )
 
 
-# -------- POLICIES --------
+# ==================================================
+# WEBSITE POLICIES SERIALIZER
+# ==================================================
 class WebsitePolicySerializer(serializers.ModelSerializer):
+    """
+    Used for:
+    - Terms of Services
+    - Privacy Policy
+    - Return & Refund Policy
+    - Shipment Policy
+    """
+
     class Meta:
         model = WebsitePolicy
-        fields = ('title', 'content')
+        fields = (
+            "title",
+            "content",
+        )
 
 
-# -------- KNOWLEDGE BASE --------
+# ==================================================
+# KNOWLEDGE BASE FILE SERIALIZER
+# ==================================================
 class KnowledgeBaseFileSerializer(serializers.ModelSerializer):
+    """
+    Returns individual Knowledge Base PDF files
+    """
+
+    pdf = serializers.FileField(
+        use_url=True,
+        read_only=True,
+    )
+
     class Meta:
         model = KnowledgeBaseFile
-        fields = ('title', 'pdf')
+        fields = (
+            "title",
+            "pdf",
+        )
 
 
-class KnowledgeBaseSerializer(serializers.ModelSerializer):
-    files = KnowledgeBaseFileSerializer(many=True)
-
-    class Meta:
-        model = KnowledgeBase
-        fields = ('title', 'files')
-
-
-# -------- SOPs --------
+# ==================================================
+# SOP FILE SERIALIZER
+# ==================================================
 class SOPFileSerializer(serializers.ModelSerializer):
+    """
+    Returns individual SOP PDF files
+    """
+
+    pdf = serializers.FileField(
+        use_url=True,
+        read_only=True,
+    )
+
     class Meta:
         model = SOPFile
-        fields = ('title', 'pdf')
-
-
-class SOPSerializer(serializers.ModelSerializer):
-    files = SOPFileSerializer(many=True)
-
-    class Meta:
-        model = SOP
-        fields = ('title', 'files')
-
-
-
-
-# ================= POLICIES =================
-class WebsitePolicySerializer(serializers.ModelSerializer):
-    class Meta:
-        model = WebsitePolicy
-        fields = ("title", "content")
-
-
-# ================= KNOWLEDGE BASE =================
-class KnowledgeBaseFileSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = KnowledgeBaseFile
-        fields = ("title", "pdf")
-
-
-# ================= SOPs =================
-class SOPFileSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = SOPFile
-        fields = ("title", "pdf")
+        fields = (
+            "title",
+            "pdf",
+        )

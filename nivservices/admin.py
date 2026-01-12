@@ -1,50 +1,46 @@
 from django.contrib import admin
 from .models import (
-    # ================= POLICIES =================
+    # ================= POLICIES (PROXY MODELS) =================
     NIVITTerms, NIVMASSTerms, NIVBRMTerms,
     NIVITPrivacy, NIVMASSPrivacy, NIVBRMPrivacy,
-
     NIVPAPTerms, NIVPAPPrivacy,
     NIVPAPReturnRefund, NIVPAPShipment,
 
-    # ================= KNOWLEDGE BASE =================
-    KnowledgeBase,
-    KnowledgeBaseFile,
-
-    # ================= SOPs =================
-    SOP,
-    SOPFile,
+    # ================= BASE MODELS =================
+    WebsitePolicy,
+    KnowledgeBase, KnowledgeBaseFile,
+    SOP, SOPFile,
 )
 
 
 # =====================================================
-# BASE WEBSITE ADMIN
+# WEBSITE POLICY ADMIN (BASE – OPTIONAL)
 # =====================================================
-class BaseWebsiteAdmin(admin.ModelAdmin):
-    website = None
-    exclude = ("website",)
-
-    def get_queryset(self, request):
-        return super().get_queryset(request).filter(website=self.website)
-
-    def save_model(self, request, obj, form, change):
-        obj.website = self.website
-        super().save_model(request, obj, form, change)
+@admin.register(WebsitePolicy)
+class WebsitePolicyAdmin(admin.ModelAdmin):
+    list_display = ("website", "policy_type", "title")
+    list_filter = ("website", "policy_type")
+    search_fields = ("title",)
+    fields = ("website", "policy_type", "title", "content")
 
 
 # =====================================================
-# BASE POLICY ADMIN
+# POLICY ADMIN BASE (FOR PROXIES)
 # =====================================================
-class BasePolicyAdmin(BaseWebsiteAdmin):
+class BasePolicyAdmin(admin.ModelAdmin):
     fields = ("title", "content")
     policy_type = None
+    website = None
 
     def get_queryset(self, request):
-        return super().get_queryset(request).filter(
-            policy_type=self.policy_type
+        qs = super().get_queryset(request)
+        return qs.filter(
+            website=self.website,
+            policy_type=self.policy_type,
         )
 
     def save_model(self, request, obj, form, change):
+        obj.website = self.website
         obj.policy_type = self.policy_type
         super().save_model(request, obj, form, change)
 
@@ -99,7 +95,7 @@ class NIVPAPPrivacyAdmin(BasePolicyAdmin):
     policy_type = "PRIVACY"
 
 
-# ================= RETURN / SHIPMENT (NIVPAP ONLY) =================
+# ================= NIVPAP EXTRA POLICIES =================
 @admin.register(NIVPAPReturnRefund)
 class NIVPAPReturnRefundAdmin(BasePolicyAdmin):
     website = "NIVPAP"
@@ -113,7 +109,7 @@ class NIVPAPShipmentAdmin(BasePolicyAdmin):
 
 
 # =====================================================
-# KNOWLEDGE BASE (INLINE SAFE)
+# KNOWLEDGE BASE ADMIN (WEBSITE SELECT VISIBLE)
 # =====================================================
 class KnowledgeBaseFileInline(admin.TabularInline):
     model = KnowledgeBaseFile
@@ -121,14 +117,15 @@ class KnowledgeBaseFileInline(admin.TabularInline):
 
 
 @admin.register(KnowledgeBase)
-class KnowledgeBaseAdmin(BaseWebsiteAdmin):
+class KnowledgeBaseAdmin(admin.ModelAdmin):
+    list_display = ("website",)
+    list_filter = ("website",)
+    fields = ("website",)           # 🔥 WEBSITE DROPDOWN VISIBLE
     inlines = [KnowledgeBaseFileInline]
-    fields = ()
-    readonly_fields = ()
 
 
 # =====================================================
-# SOPs (INLINE SAFE)
+# SOP ADMIN (WEBSITE SELECT VISIBLE)
 # =====================================================
 class SOPFileInline(admin.TabularInline):
     model = SOPFile
@@ -136,7 +133,8 @@ class SOPFileInline(admin.TabularInline):
 
 
 @admin.register(SOP)
-class SOPAdmin(BaseWebsiteAdmin):
+class SOPAdmin(admin.ModelAdmin):
+    list_display = ("website",)
+    list_filter = ("website",)
+    fields = ("website",)           # 🔥 WEBSITE DROPDOWN VISIBLE
     inlines = [SOPFileInline]
-    fields = ()
-    readonly_fields = ()

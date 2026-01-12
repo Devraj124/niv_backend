@@ -6,62 +6,48 @@ from ckeditor.fields import RichTextField
 # CONSTANTS
 # =========================
 WEBSITE_CHOICES = (
-    ('NIVIT', 'NIVIT'),
-    ('NIVMASS', 'NIVMASS'),
-    ('NIVBRM', 'NIVBRM'),
-    ('NIVPAP', 'NIVPAP'),
+    ("NIVIT", "NIVIT"),
+    ("NIVMASS", "NIVMASS"),
+    ("NIVBRM", "NIVBRM"),
+    ("NIVPAP", "NIVPAP"),
 )
 
 
 # =========================
-# WEBSITE POLICY
+# WEBSITE POLICY (SINGLE TABLE)
 # =========================
 class WebsitePolicy(models.Model):
     POLICY_TYPE_CHOICES = (
-        ('TERMS', 'Terms of Services'),
-        ('PRIVACY', 'Privacy Policy'),
+        ("TERMS", "Terms of Services"),
+        ("PRIVACY", "Privacy Policy"),
+        ("RETURN_REFUND", "Return & Refund Policy"),
+        ("SHIPMENT", "Shipment Policy"),
     )
 
-    website = models.CharField(max_length=20, choices=WEBSITE_CHOICES)
-    policy_type = models.CharField(max_length=20, choices=POLICY_TYPE_CHOICES)
+    website = models.CharField(
+        max_length=20,
+        choices=WEBSITE_CHOICES,
+    )
+    policy_type = models.CharField(
+        max_length=30,
+        choices=POLICY_TYPE_CHOICES,
+    )
 
     title = models.CharField(max_length=255)
     content = RichTextField()
 
     class Meta:
-        unique_together = ('website', 'policy_type')
+        unique_together = ("website", "policy_type")
+        verbose_name = "Website Policy"
+        verbose_name_plural = "Website Policies"
 
     def __str__(self):
         return f"{self.website} – {self.policy_type}"
-    
 
 
-class WebsitePolicy(models.Model):
-    POLICY_TYPE_CHOICES = (
-        ('TERMS', 'Terms of Services'),
-        ('PRIVACY', 'Privacy Policy'),
-        ('RETURN_REFUND', 'Return & Refund Policy'),  # 🔥 NEW
-        ('SHIPMENT', 'Shipment Policy'),              # 🔥 NEW
-    )
-
-    website = models.CharField(max_length=20, choices=WEBSITE_CHOICES)
-    policy_type = models.CharField(max_length=30, choices=POLICY_TYPE_CHOICES)
-
-    title = models.CharField(max_length=255)
-    content = RichTextField()
-
-    class Meta:
-        unique_together = ('website', 'policy_type')
-
-    def __str__(self):
-        return f"{self.website} - {self.policy_type}"
-
-
-
-
-# =========================
-# TERMS (PROXY)
-# =========================
+# ==================================================
+# POLICY PROXIES (ADMIN DISPLAY ONLY)
+# ==================================================
 class NIVITTerms(WebsitePolicy):
     class Meta:
         proxy = True
@@ -83,9 +69,13 @@ class NIVBRMTerms(WebsitePolicy):
         verbose_name_plural = "NIVBRM – Terms of Services"
 
 
-# =========================
-# PRIVACY (PROXY)
-# =========================
+class NIVPAPTerms(WebsitePolicy):
+    class Meta:
+        proxy = True
+        verbose_name = "NIVPAP – Terms of Services"
+        verbose_name_plural = "NIVPAP – Terms of Services"
+
+
 class NIVITPrivacy(WebsitePolicy):
     class Meta:
         proxy = True
@@ -105,14 +95,6 @@ class NIVBRMPrivacy(WebsitePolicy):
         proxy = True
         verbose_name = "NIVBRM – Privacy Policy"
         verbose_name_plural = "NIVBRM – Privacy Policy"
-
-
-
-class NIVPAPTerms(WebsitePolicy):
-    class Meta:
-        proxy = True
-        verbose_name = "NIVPAP – Terms of Services"
-        verbose_name_plural = "NIVPAP – Terms of Services"
 
 
 class NIVPAPPrivacy(WebsitePolicy):
@@ -136,13 +118,18 @@ class NIVPAPShipment(WebsitePolicy):
         verbose_name_plural = "NIVPAP – Shipment Policy"
 
 
-
-
 # =========================
-# KNOWLEDGE BASE (NO TITLE)
+# KNOWLEDGE BASE (WEBSITE-WISE)
 # =========================
 class KnowledgeBase(models.Model):
-    website = models.CharField(max_length=20, choices=WEBSITE_CHOICES)
+    website = models.CharField(
+        max_length=20,
+        choices=WEBSITE_CHOICES,
+    )
+
+    class Meta:
+        verbose_name = "Knowledge Base"
+        verbose_name_plural = "Knowledge Bases"
 
     def __str__(self):
         return f"{self.website} – Knowledge Base"
@@ -152,71 +139,31 @@ class KnowledgeBaseFile(models.Model):
     knowledgebase = models.ForeignKey(
         KnowledgeBase,
         related_name="files",
-        on_delete=models.CASCADE
+        on_delete=models.CASCADE,
     )
     title = models.CharField(max_length=255)
     pdf = models.FileField(upload_to="knowledgebase/")
 
-    def __str__(self):
-        return self.title
-
-
-class NIVITKnowledgeBase(KnowledgeBase):
     class Meta:
-        proxy = True
-        verbose_name = "NIVIT – Knowledge Base"
-        verbose_name_plural = "NIVIT – Knowledge Base"
-
-
-class NIVMASSKnowledgeBase(KnowledgeBase):
-    class Meta:
-        proxy = True
-        verbose_name = "NIVMASS – Knowledge Base"
-        verbose_name_plural = "NIVMASS – Knowledge Base"
-
-
-class NIVBRMKnowledgeBase(KnowledgeBase):
-    class Meta:
-        proxy = True
-        verbose_name = "NIVBRM – Knowledge Base"
-        verbose_name_plural = "NIVBRM – Knowledge Base"
-
-
-
-
-class KnowledgeBase(models.Model):
-    website = models.CharField(max_length=20, choices=WEBSITE_CHOICES)
-
-    def __str__(self):
-        return f"{self.website} – Knowledge Base"
-
-
-class KnowledgeBaseFile(models.Model):
-    knowledgebase = models.ForeignKey(
-        KnowledgeBase,
-        related_name="files",
-        on_delete=models.CASCADE
-    )
-    title = models.CharField(max_length=255)
-    pdf = models.FileField(upload_to="knowledgebase/")
+        verbose_name = "Knowledge Base File"
+        verbose_name_plural = "Knowledge Base Files"
 
     def __str__(self):
         return self.title
-
-
-class NIVPAPKnowledgeBase(KnowledgeBase):
-    class Meta:
-        proxy = True
-        verbose_name = "NIVPAP – Knowledge Base"
-        verbose_name_plural = "NIVPAP – Knowledge Base"
-
 
 
 # =========================
-# SOPs (NO TITLE)
+# SOPs (WEBSITE-WISE)
 # =========================
 class SOP(models.Model):
-    website = models.CharField(max_length=20, choices=WEBSITE_CHOICES)
+    website = models.CharField(
+        max_length=20,
+        choices=WEBSITE_CHOICES,
+    )
+
+    class Meta:
+        verbose_name = "SOP"
+        verbose_name_plural = "SOPs"
 
     def __str__(self):
         return f"{self.website} – SOPs"
@@ -226,62 +173,14 @@ class SOPFile(models.Model):
     sop = models.ForeignKey(
         SOP,
         related_name="files",
-        on_delete=models.CASCADE
+        on_delete=models.CASCADE,
     )
     title = models.CharField(max_length=255)
     pdf = models.FileField(upload_to="sops/")
 
-    def __str__(self):
-        return self.title
-
-
-class NIVITSOP(SOP):
     class Meta:
-        proxy = True
-        verbose_name = "NIVIT – SOPs"
-        verbose_name_plural = "NIVIT – SOPs"
-
-
-class NIVMASSSOP(SOP):
-    class Meta:
-        proxy = True
-        verbose_name = "NIVMASS – SOPs"
-        verbose_name_plural = "NIVMASS – SOPs"
-
-
-class NIVBRMSOP(SOP):
-    class Meta:
-        proxy = True
-        verbose_name = "NIVBRM – SOPs"
-        verbose_name_plural = "NIVBRM – SOPs"
-
-
-
-# =========================
-# SOPs
-# =========================
-class SOP(models.Model):
-    website = models.CharField(max_length=20, choices=WEBSITE_CHOICES)
-
-    def __str__(self):
-        return f"{self.website} – SOPs"
-
-
-class SOPFile(models.Model):
-    sop = models.ForeignKey(
-        SOP,
-        related_name="files",
-        on_delete=models.CASCADE
-    )
-    title = models.CharField(max_length=255)
-    pdf = models.FileField(upload_to="sops/")
+        verbose_name = "SOP File"
+        verbose_name_plural = "SOP Files"
 
     def __str__(self):
         return self.title
-
-
-class NIVPAPSOP(SOP):
-    class Meta:
-        proxy = True
-        verbose_name = "NIVPAP – SOPs"
-        verbose_name_plural = "NIVPAP – SOPs"
